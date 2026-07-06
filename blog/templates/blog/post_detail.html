@@ -1,0 +1,48 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+    <article class="bg-white p-4 rounded shadow-sm mb-4">
+        <h1 class="fw-bold mb-2">{{ post.title }}</h1>
+        <div class="text-muted small mb-4 pb-2 border-bottom">
+            Published by <strong>{{ post.author.username }}</strong> on {{ post.published_at|date:"F d, Y" }}
+            {% if post.category %}
+                in <span class="badge bg-info text-dark">{{ post.category.name }}</span>
+            {% endif %}
+        </div>
+        <div class="lh-lg text-secondary" style="white-space: pre-line;">
+            {{ post.content }}
+        </div>
+    </article>
+
+    <section class="bg-white p-4 rounded shadow-sm">
+        <h3 class="h5 mb-4 border-bottom pb-2">Discussion ({{ comments.count }})</h3>
+        {% for comment in comments %}
+            <div class="mb-3 p-3 bg-light rounded border-start border-primary border-3">
+                <div class="d-flex justify-content-between text-muted small mb-1">
+                    <strong>{{ comment.author.username }}</strong>
+                    <span>{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <p class="mb-0 text-dark">{{ comment.body }}</p>
+            </div>
+        {% empty %}
+            <p class="text-muted small">No comments posted yet.</p>
+        {% endfor %}
+
+        {% if user.is_authenticated %}
+            <form action="{% url 'add_comment' post.slug %}" method="POST" class="mt-4 pt-3 border-top">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="body" class="form-label font-weight-bold small">Join the conversation:</label>
+                    <textarea name="body" id="body" rows="3" class="form-control" placeholder="Write your comment here..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark btn-sm">Submit Comment</button>
+            </form>
+        {% else %}
+            <div class="alert alert-warning small mt-4">
+                Please <a href="/admin/login/?next={{ request.path }}">log in</a> to drop a comment.
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
